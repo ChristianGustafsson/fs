@@ -1,0 +1,9 @@
+Drop your avatar image here as:
+
+  avatar.png
+
+Recommended:
+- 1024x1024 or larger
+- Face centered, good lighting
+
+The app will automatically use it for the Live Presenter.

@@ -1,0 +1,2614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GBFoods Nordics — Holographic Strategy Journey (Path to 100 M€)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030812;
+      --cyan: #00f0ff;
+      --cyan-dim: rgba(0,240,255,0.4);
+      --cyan-glow: rgba(0,240,255,0.15);
+      --green: #00ff88;
+      --green-dim: rgba(0,255,136,0.4);
+      --magenta: #ff00ff;
+      --white: #e0f4ff;
+      --muted: #4a7a8a;
+      --warn: #ffaa00;
+      --danger: #ff4d6d;
+      --panel: rgba(0,0,0,0.62);
+      --panel2: rgba(0,240,255,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+    }
+
+    /* Animated grid background */
+    #grid-canvas { position: fixed; inset: 0; z-index: 0; }
+
+    /* Particle layer */
+    #particle-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    /* Scanline overlay */
+    .scanlines {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.15) 2px,
+        rgba(0,0,0,0.15) 4px
+      );
+      animation: scanMove 8s linear infinite;
+    }
+    @keyframes scanMove { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
+
+    /* Vignette */
+    .vignette {
+      position: fixed; inset: 0; z-index: 3; pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%);
+    }
+
+    /* Main stage */
+    #stage {
+      position: relative;
+      z-index: 10;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    /* Holographic card frame */
+    .holo-frame {
+      position: relative;
+      width: min(1180px, 92vw);
+      min-height: min(720px, 84vh);
+      padding: 3px;
+      background: linear-gradient(135deg, var(--cyan), var(--green), var(--cyan));
+      border-radius: 10px;
+      animation: borderPulse 3s ease-in-out infinite;
+    }
+    @keyframes borderPulse {
+      0%, 100% { filter: drop-shadow(0 0 20px var(--cyan-dim)) drop-shadow(0 0 40px var(--cyan-glow)); }
+      50% { filter: drop-shadow(0 0 30px var(--cyan)) drop-shadow(0 0 60px var(--cyan-dim)); }
+    }
+
+    .holo-inner {
+      background: rgba(3,8,18,0.92);
+      border-radius: 8px;
+      width: 100%;
+      height: 100%;
+      min-height: min(714px, calc(84vh - 6px));
+      padding: clamp(22px, 3.5vw, 44px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Corner accents */
+    .corner { position: absolute; width: 30px; height: 30px; border: 2px solid var(--cyan); z-index: 5; }
+    .corner-tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+    .corner-tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+    .corner-bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+    .corner-br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+    .plus { position: absolute; color: var(--cyan); font-size: 14px; font-weight: bold; opacity: 0.8; }
+    .plus-tl { top: 35px; left: 35px; }
+    .plus-tr { top: 35px; right: 35px; }
+    .plus-bl { bottom: 35px; left: 35px; }
+    .plus-br { bottom: 35px; right: 35px; }
+
+    /* Dot matrix overlay */
+    .dot-matrix {
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(0,240,255,0.08) 1px, transparent 1px);
+      background-size: 12px 12px;
+      pointer-events: none; z-index: 1;
+    }
+
+    /* Content area */
+    .slide-content { position: relative; z-index: 10; height: 100%; animation: fadeSlideIn 0.55s ease-out; }
+    @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(18px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    /* Typography */
+    .kicker {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan-dim);
+    }
+
+    .title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      margin-top: 12px;
+      background: linear-gradient(90deg, var(--cyan), var(--green), var(--cyan));
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s ease-in-out infinite;
+      text-shadow: 0 0 40px var(--cyan-glow);
+    }
+
+    @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+    .subtitle { font-size: 1.2rem; font-weight: 300; color: var(--muted); margin-top: 8px; line-height: 1.25; }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 1.55rem;
+      color: var(--cyan);
+      text-shadow: 0 0 15px var(--cyan-dim);
+      margin-bottom: 14px;
+      letter-spacing: 0.06em;
+    }
+
+    .micro { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(224,244,255,0.75); }
+
+    /* Stat cards */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 18px 0; }
+
+    .stat-card {
+      position: relative;
+      background: rgba(0,240,255,0.03);
+      border: 1px solid var(--cyan-dim);
+      border-radius: 6px;
+      padding: 18px;
+      transition: all 0.25s ease;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--cyan);
+      box-shadow: 0 0 15px var(--cyan);
+    }
+
+    .stat-card:hover { background: rgba(0,240,255,0.08); transform: translateY(-2px); box-shadow: 0 0 30px var(--cyan-glow); }
+
+    .stat-value { font-family: 'Orbitron', sans-serif; font-size: 2.1rem; font-weight: 900; color: var(--white); text-shadow: 0 0 20px var(--cyan-dim); }
+
+    .stat-label { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+    /* Info boxes */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+    .info-box {
+      background: rgba(0,240,255,0.03);
+      border: 1px solid var(--cyan-dim);
+      border-radius: 6px;
+      padding: 18px;
+    }
+
+    .info-box-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--cyan); margin-bottom: 10px; letter-spacing: 0.1em; }
+    .info-box-title.green { color: var(--green); }
+    .info-box-title.warn { color: var(--warn); }
+    .info-box-title.danger { color: var(--danger); }
+
+    .info-box ul { list-style: none; padding: 0; }
+
+    .info-box li { padding: 6px 0; padding-left: 16px; position: relative; color: rgba(224,244,255,0.82); font-size: 0.95rem; line-height: 1.25; }
+
+    .info-box li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); }
+
+    /* Data table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.98rem; }
+
+    th {
+      text-align: left;
+      padding: 12px 10px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      border-bottom: 1px solid var(--cyan-dim);
+      background: rgba(0,240,255,0.05);
+    }
+
+    td { padding: 10px; border-bottom: 1px solid rgba(0,240,255,0.1); color: var(--white); vertical-align: top; }
+
+    tr:hover td { background: rgba(0,240,255,0.05); }
+
+    /* Chart container */
+    .chart-box { background: rgba(0,0,0,0.3); border: 1px solid var(--cyan-dim); border-radius: 6px; padding: 14px; height: 310px; }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border: 1px solid var(--cyan-dim);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: var(--cyan);
+      background: rgba(0,240,255,0.05);
+      letter-spacing: 0.08em;
+    }
+
+    /* Big stat */
+    .big-stat {
+      text-align: center;
+      padding: 26px;
+      border: 2px solid var(--cyan);
+      border-radius: 6px;
+      background: rgba(0,240,255,0.03);
+      box-shadow: 0 0 30px var(--cyan-glow);
+    }
+
+    .big-stat-value { font-family: 'Orbitron', sans-serif; font-size: 3.8rem; font-weight: 900; color: var(--white); text-shadow: 0 0 30px var(--cyan); }
+    .big-stat-label { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--muted); }
+
+    /* HUD */
+    #hud {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .hud-group { display: flex; gap: 10px; align-items: center; pointer-events: auto; flex-wrap: wrap; }
+
+    .hud-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid var(--cyan-dim);
+      border-radius: 30px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      backdrop-filter: blur(10px);
+      user-select: none;
+    }
+
+    .hud-btn {
+      padding: 10px 16px;
+      background: rgba(0,240,255,0.1);
+      border: 1px solid var(--cyan-dim);
+      border-radius: 30px;
+      color: var(--cyan);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .hud-btn:hover { background: rgba(0,240,255,0.2); box-shadow: 0 0 20px var(--cyan-dim); transform: scale(1.02); }
+
+    /* Progress bar */
+    #progress-container { position: fixed; bottom: 0; left: 0; right: 0; height: 4px; background: rgba(0,240,255,0.1); z-index: 100; }
+    #progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--green)); box-shadow: 0 0 20px var(--cyan); transition: width 0.25s linear; }
+
+    /* Start overlay */
+    #overlay {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at 50% 30%, rgba(0,240,255,0.1), transparent 50%),
+                  radial-gradient(ellipse at 50% 70%, rgba(0,255,136,0.08), transparent 50%),
+                  var(--bg);
+      text-align: center;
+      padding: 24px;
+    }
+
+    .start-content { max-width: 860px; }
+
+    .start-btn {
+      margin-top: 28px;
+      padding: 16px 40px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 40px var(--cyan-dim);
+      transition: all 0.3s;
+      animation: btnPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes btnPulse { 0%, 100% { box-shadow: 0 0 20px var(--cyan-dim); } 50% { box-shadow: 0 0 50px var(--cyan); } }
+
+    .start-btn:hover { transform: scale(1.05); box-shadow: 0 0 60px var(--cyan); }
+
+    .feature-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+
+    .hidden { display: none !important; }
+
+    /* Scrollable content area */
+    .scroll-area { max-height: calc(84vh - 170px); overflow-y: auto; padding-right: 10px; }
+    .scroll-area::-webkit-scrollbar { width: 4px; }
+    .scroll-area::-webkit-scrollbar-track { background: rgba(0,240,255,0.05); }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--cyan-dim); border-radius: 4px; }
+
+    /* Presenter panel */
+    #presenter-panel {
+      position: fixed;
+      top: 78px;
+      right: 16px;
+      width: min(420px, 92vw);
+      max-height: calc(100vh - 110px);
+      overflow: auto;
+      z-index: 150;
+      background: var(--panel);
+      border: 1px solid var(--cyan-dim);
+      border-radius: 14px;
+      box-shadow: 0 0 30px rgba(0,240,255,0.18);
+      backdrop-filter: blur(10px);
+      padding: 14px;
+      pointer-events: auto;
+    }
+
+    .p-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(0,240,255,0.18);
+    }
+
+    .p-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cyan); }
+    .p-slide { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 0.12em; color: rgba(224,244,255,0.75); text-transform: uppercase; }
+
+    .p-block { background: var(--panel2); border: 1px solid rgba(0,240,255,0.14); border-radius: 12px; padding: 10px; margin-bottom: 10px; }
+    .p-label { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(224,244,255,0.68); margin-bottom: 6px; }
+    .p-text { color: rgba(224,244,255,0.90); font-size: 0.95rem; line-height: 1.25; }
+    .p-list { list-style: none; padding-left: 0; }
+    .p-list li { position: relative; padding-left: 14px; margin: 6px 0; color: rgba(224,244,255,0.84); }
+    .p-list li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .stat-grid { grid-template-columns: 1fr; }
+      .info-grid { grid-template-columns: 1fr; }
+      #hud { flex-direction: column; gap: 10px; }
+      .hud-group { justify-content: center; }
+      #presenter-panel { left: 16px; right: 16px; width: auto; }
+    }
+
+    /* Glitch effect */
+    @keyframes glitch { 0%, 90%, 100% { transform: translate(0); } 92% { transform: translate(-2px, 1px); } 94% { transform: translate(2px, -1px); } 96% { transform: translate(-1px, 2px); } 98% { transform: translate(1px, -2px); } }
+    .glitch-text { animation: glitch 5s ease-in-out infinite; }
+
+    /* =========================================================
+       LIVE CINEMATIC LAYER (video + KPI HUD + Avatar + Chat)
+       ========================================================= */
+    #bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+      opacity: 0.20;
+      filter: saturate(1.2) contrast(1.1) brightness(0.85);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    #video-hud {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      z-index: 12;
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      pointer-events: none;
+    }
+
+    .kpi-stack {
+      pointer-events: none;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: min(520px, 54vw);
+    }
+
+    .kpi-card {
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(0,240,255,0.25);
+      box-shadow: 0 0 22px rgba(0,240,255,0.12);
+      border-radius: 10px;
+      padding: 10px 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(0,240,255,0.10), rgba(0,255,136,0.06), rgba(0,240,255,0.08));
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .kpi-label {
+      position: relative;
+      z-index: 2;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 0.62rem;
+      color: rgba(224,244,255,0.75);
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      position: relative;
+      z-index: 2;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.35rem;
+      color: var(--cyan);
+      text-shadow: 0 0 16px rgba(0,240,255,0.35);
+      line-height: 1.05;
+    }
+
+    .kpi-sub {
+      position: relative;
+      z-index: 2;
+      margin-top: 6px;
+      font-size: 0.9rem;
+      color: rgba(224,244,255,0.70);
+    }
+
+    #ticker {
+      pointer-events: none;
+      min-width: min(520px, 54vw);
+      max-width: min(760px, 70vw);
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(0,240,255,0.25);
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 0 22px rgba(0,240,255,0.12);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .ticker-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 16px rgba(0,255,136,0.35);
+      flex: 0 0 auto;
+      animation: pulseDot 1.3s ease-in-out infinite;
+    }
+    @keyframes pulseDot { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.35); opacity: 1; } }
+
+    .ticker-text {
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.10em;
+      font-size: 0.75rem;
+      color: rgba(224,244,255,0.78);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Avatar dock */
+    #avatar-dock {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 13;
+      width: min(340px, 92vw);
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(0,240,255,0.25);
+      border-radius: 12px;
+      box-shadow: 0 0 26px rgba(0,240,255,0.12);
+      padding: 12px;
+    }
+
+    #avatar-canvas {
+      width: 100%;
+      height: 220px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 40% 25%, rgba(0,240,255,0.10), rgba(0,0,0,0.65));
+      border: 1px solid rgba(0,240,255,0.18);
+      display: block;
+    }
+
+    .avatar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .avatar-title {
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.14em;
+      font-size: 0.72rem;
+      color: rgba(224,244,255,0.80);
+      text-transform: uppercase;
+    }
+
+    .avatar-small {
+      font-size: 0.85rem;
+      color: rgba(224,244,255,0.75);
+    }
+
+    .mini-btn {
+      pointer-events: auto;
+      cursor: pointer;
+      border: 1px solid rgba(0,240,255,0.35);
+      background: rgba(0,240,255,0.06);
+      color: var(--white);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.14em;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      transition: transform 0.12s ease, background 0.2s ease;
+    }
+    .mini-btn:hover { transform: translateY(-1px); background: rgba(0,240,255,0.10); }
+
+    /* Chat dock */
+    #chat-dock {
+      position: fixed;
+      right: 18px;
+      top: 86px;
+      z-index: 13;
+      width: min(380px, 92vw);
+      height: min(520px, 62vh);
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(0,240,255,0.25);
+      border-radius: 12px;
+      box-shadow: 0 0 26px rgba(0,240,255,0.12);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #chat-log {
+      flex: 1;
+      overflow: auto;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,240,255,0.18);
+      background: rgba(0,0,0,0.40);
+    }
+
+    .chat-msg { margin-bottom: 10px; }
+    .chat-role {
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.14em;
+      font-size: 0.62rem;
+      opacity: 0.75;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .chat-bubble {
+      padding: 10px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,240,255,0.15);
+      background: rgba(0,240,255,0.06);
+      line-height: 1.35;
+      color: rgba(224,244,255,0.90);
+    }
+
+    #chat-form { display:flex; gap: 8px; }
+    #chat-input {
+      flex: 1;
+      border-radius: 10px;
+      border: 1px solid rgba(0,240,255,0.25);
+      background: rgba(0,0,0,0.35);
+      color: var(--white);
+      padding: 10px 10px;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    #chat-send { pointer-events: auto; }
+
+    .dock-hidden { display: none !important; }
+
+    @media (max-width: 920px) {
+      #video-hud { left: 14px; right: 14px; bottom: 14px; flex-direction: column; align-items: flex-start; }
+      .kpi-stack { width: 100%; grid-template-columns: 1fr 1fr; }
+      #ticker { width: 100%; min-width: 0; }
+      #chat-dock { right: 14px; left: 14px; width: auto; }
+      #avatar-dock { right: 14px; left: 14px; width: auto; }
+    }
+
+  </style>
+</head>
+<body>
+  <canvas id="grid-canvas"></canvas>
+  <canvas id="particle-canvas"></canvas>
+  <video id="bg-video" autoplay muted loop playsinline preload="auto">
+    <source src="assets/video/scene_the_vigil.mp4" type="video/mp4" />
+  </video>
+
+  <!-- Live KPI HUD (numbers are animated and synced to the journey) -->
+  <div id="video-hud" class="hidden">
+    <div class="kpi-stack" aria-label="Live KPIs">
+      <div class="kpi-card"><div class="kpi-label">Net Sales</div><div class="kpi-value" id="kpi-sales">63.1M€</div><div class="kpi-sub" id="kpi-sales-sub">2025 core baseline</div></div>
+      <div class="kpi-card"><div class="kpi-label">EBIT</div><div class="kpi-value" id="kpi-ebit">16.0%</div><div class="kpi-sub" id="kpi-ebit-sub">Target range track</div></div>
+      <div class="kpi-card"><div class="kpi-label">Gross Margin</div><div class="kpi-value" id="kpi-gm">41.3%</div><div class="kpi-sub" id="kpi-gm-sub">Hard gate 39.5%</div></div>
+      <div class="kpi-card"><div class="kpi-label">Execution</div><div class="kpi-value" id="kpi-osa">OSA 90%</div><div class="kpi-sub" id="kpi-osa-sub">Live pulse simulation</div></div>
+    </div>
+    <div id="ticker" aria-label="Live ticker">
+      <div class="ticker-dot"></div>
+      <div class="ticker-text" id="ticker-text">WEEKLY PULSE • Booting strategy telemetry…</div>
+    </div>
+  </div>
+
+  <div class="scanlines"></div>
+  <div class="vignette"></div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-group">
+      <div class="hud-pill">
+        <span style="color:var(--cyan);">GBFOODS</span>
+        <span style="opacity:0.4;">|</span>
+        <span id="slide-label">01 / 23</span>
+        <span style="opacity:0.4;">|</span>
+        <span id="slide-name">TITLE</span>
+      </div>
+      <button class="hud-btn" id="btn-prev">◄ PREV</button>
+      <button class="hud-btn" id="btn-next">NEXT ►</button>
+    </div>
+    <div class="hud-group">
+      <button class="hud-btn" id="btn-live">LIVE: ON</button>
+      <button class="hud-btn" id="btn-avatar">AVATAR: ON</button>
+      <button class="hud-btn" id="btn-chat">CHAT: OFF</button>
+      <button class="hud-btn" id="btn-voice-mode">VOICE MODE: BROWSER</button>
+      <button class="hud-btn" id="btn-presenter">PRESENTER: OFF</button>
+      <button class="hud-btn" id="btn-auto">AUTO: ON</button>
+      <button class="hud-btn" id="btn-tts">VOICE: ON</button>
+      <button class="hud-btn" id="btn-audio">AUDIO: ON</button>
+      <button class="hud-btn" id="btn-restart">⟳ RESTART</button>
+    </div>
+  </div>
+
+  <!-- Start overlay -->
+  <div id="overlay">
+    <div class="start-content">
+      <div class="kicker">GBFoods Nordics • Strategy 2026–2029 • Lund • Jan 18, 2026</div>
+      <div class="title glitch-text">PATH TO 100 M€</div>
+      <div class="subtitle">Consumer-Obsessed, Disciplined & Profitable Growth — Holographic Journey</div>
+
+      <div class="feature-badges">
+        <span class="badge">⬡ 23-slide journey</span>
+        <span class="badge">⬡ Presenter notes (P)</span>
+        <span class="badge">⬡ Voice narration</span>
+        <span class="badge">⬡ Interactive charts</span>
+      </div>
+
+      <button class="start-btn" onclick="startExperience()">▶ INITIATE STRATEGY</button>
+      <div style="margin-top:14px; color:var(--muted); font-size:0.9rem;">
+        Use ← → arrows to navigate • Space to pause narration • R to restart • P presenter notes
+      </div>
+      <div style="margin-top:10px; color:rgba(224,244,255,0.55); font-size:0.85rem;">
+        Tip: if charts don’t load, check internet access (Chart.js is from CDN).
+      </div>
+    </div>
+  </div>
+
+  <!-- Main stage -->
+  <div id="stage" class="hidden">
+    <div class="holo-frame">
+      <div class="holo-inner">
+        <div class="dot-matrix"></div>
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div>
+        <div class="corner corner-br"></div>
+        <span class="plus plus-tl">+</span>
+        <span class="plus plus-tr">+</span>
+        <span class="plus plus-bl">+</span>
+        <span class="plus plus-br">+</span>
+        <div id="content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Presenter panel -->
+  <div id="presenter-panel" class="hidden">
+    <div class="p-head">
+      <div class="p-title">Presenter Notes</div>
+      <div class="p-slide" id="p-slide">—</div>
+    </div>
+
+    <div class="p-block">
+      <div class="p-label">Act</div>
+      <div class="p-text" id="p-act">—</div>
+    </div>
+
+    <div class="p-block">
+      <div class="p-label">Key message (say)</div>
+      <div class="p-text" id="p-say">—</div>
+    </div>
+
+    <div class="p-block">
+      <div class="p-label">Proof / evidence</div>
+      <ul class="p-list" id="p-proof"></ul>
+    </div>
+
+    <div class="p-block">
+      <div class="p-label">Decision ask</div>
+      <div class="p-text" id="p-ask">—</div>
+    </div>
+
+    <div class="p-block" style="margin-bottom:0;">
+      <div class="p-label">Transition</div>
+      <div class="p-text" id="p-bridge">—</div>
+    </div>
+
+
+
+  </div>
+
+  <!-- Avatar presenter (lipsync driven by AI TTS when configured) -->
+  <div id="avatar-dock" class="hidden">
+    <canvas id="avatar-canvas" width="720" height="420"></canvas>
+    <div class="avatar-row">
+      <div>
+        <div class="avatar-title">Live Presenter</div>
+        <div class="avatar-small" id="avatar-status">Ready • Holo-voice</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="mini-btn" id="btn-avatar-say">SPEAK SLIDE</button>
+        <button class="mini-btn" id="btn-avatar-stop">STOP</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy Q&A chatbot (answers using deck content + guardrails) -->
+  <div id="chat-dock" class="dock-hidden">
+    <div class="avatar-row" style="margin-top:0;">
+      <div>
+        <div class="avatar-title">Strategy Q&A</div>
+        <div class="avatar-small" id="chat-status">Offline (set OPENAI_API_KEY on Netlify to enable)</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="mini-btn" id="btn-chat-clear">CLEAR</button>
+      </div>
+    </div>
+
+    <div id="chat-log" aria-label="Chat messages"></div>
+
+    <form id="chat-form">
+      <input id="chat-input" placeholder="Ask anything about the journey… (e.g., ‘What are the hard gates?’)" />
+      <button class="mini-btn" id="chat-send" type="submit">SEND</button>
+    </form>
+  </div>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+
+  <script>
+    // =============================================================
+    // SLIDES DATA (23) — rebuilt in the holographic theme
+    // =============================================================
+
+    const slides = [
+      {
+        key: "title",
+        name: "Title",
+        html: `
+          <div class="slide-content" style="display:flex; flex-direction:column; justify-content:center; height:100%; text-align:center;">
+            <div class="kicker">LUND • JAN 18, 2026 • GBFOODS NORDICS</div>
+            <div class="title" style="font-size:clamp(2.6rem,6vw,4.2rem); margin:18px 0 6px;">FROM 63.1 → 100 M€</div>
+            <div class="subtitle">Consumer-Obsessed • Disciplined Execution • Sustainable Profitability</div>
+
+            <div class="stat-grid" style="max-width:900px; margin:34px auto 0;">
+              <div class="stat-card">
+                <div class="stat-value">63.1M€</div>
+                <div class="stat-label">2025 Net Sales (Core)</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">41.3%</div>
+                <div class="stat-label">2025 Gross Margin</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" style="color:var(--green);">100M€</div>
+                <div class="stat-label">2029 Target</div>
+              </div>
+            </div>
+
+            <div style="margin-top:20px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+              <span class="badge">GM hard gate: &lt; 39.5%</span>
+              <span class="badge">Field force gate: uplift &lt; 8%</span>
+              <span class="badge">OH ≤ 9% • A&P ≤ 9%</span>
+            </div>
+          </div>
+        `,
+        script: "Welcome to the GBFoods Nordics strategy journey. We start from a strong 2025 baseline of 63.1 million euros and a 41.3 percent gross margin, and we will scale to 100 million by 2029 through consumer obsession and disciplined execution."
+      },
+
+      {
+        key: "agenda",
+        name: "Agenda",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Agenda</div>
+            <div class="subtitle" style="margin-bottom:16px;">Baseline → diagnosis → levers → operating system → year-by-year roadmap</div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title">SECTION 1 — STARTING POINT</div>
+                <ul>
+                  <li>2025 closing baseline (P&L landing)</li>
+                  <li>Market context & strategic diagnosis</li>
+                  <li>Ambition & value creation framework</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title green">SECTION 2 — VALUE CREATION</div>
+                <ul>
+                  <li>Route to market strategy</li>
+                  <li>Field force transition (ROI-gated)</li>
+                  <li>Foodservice expansion (focused)</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">SECTION 3 — EXECUTION OS</div>
+                <ul>
+                  <li>Org & ways of working</li>
+                  <li>Marketing & campaign plan</li>
+                  <li>NPD plan (health/premium focus)</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title warn">SECTION 4 — DISCIPLINE</div>
+                <ul>
+                  <li>Financial framework & guardrails</li>
+                  <li>KPIs, tools & data</li>
+                  <li>Risks, gates & mitigations</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style="margin-top:16px; padding:14px; border:1px solid var(--cyan-dim); border-radius:10px; background: rgba(0,0,0,0.25);">
+              <div class="micro" style="color:var(--cyan);">Implementation roadmap</div>
+              <div style="margin-top:6px; color:rgba(224,244,255,0.85);">2026 → 2029 (one slide per year) + summary + next steps.</div>
+            </div>
+          </div>
+        `,
+        script: "Today we align on the real 2025 starting point, the strategic diagnosis, and the levers that drive value. Then we lock the execution operating system: organization, ways of working, marketing and innovation. Finally, we commit to financial guardrails, KPIs, risk gates, and the roadmap from 2026 to 2029."
+      },
+
+      {
+        key: "exec_summary",
+        name: "Executive Summary",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Executive Summary</div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
+              <div>
+                <div class="info-box">
+                  <div class="info-box-title">2025 Closing baseline (core)</div>
+                  <div class="stat-grid" style="margin:12px 0 0; grid-template-columns: 1fr 1fr;">
+                    <div class="stat-card"><div class="stat-value">63.1M€</div><div class="stat-label">Net Sales</div></div>
+                    <div class="stat-card"><div class="stat-value">41.3%</div><div class="stat-label">GM%</div></div>
+                    <div class="stat-card"><div class="stat-value">15.2M€</div><div class="stat-label">Broth</div></div>
+                    <div class="stat-card"><div class="stat-value">1.2M€</div><div class="stat-label">Noodles</div></div>
+                  </div>
+                  <div style="margin-top:10px; padding:12px; border:1px solid rgba(0,240,255,0.18); border-radius:10px; background: rgba(0,0,0,0.25);">
+                    <div class="micro">EBIT</div>
+                    <div style="font-family:'Orbitron',sans-serif; font-size:1.6rem; margin-top:4px;">15.3M€ <span style="color:rgba(224,244,255,0.7); font-size:0.9rem;">(24%)</span></div>
+                  </div>
+                </div>
+
+                <div style="margin-top:14px;" class="info-box">
+                  <div class="info-box-title green">2026–2029 ambition</div>
+                  <ul>
+                    <li><b>100M€</b> net sales by 2029 (~12% CAGR)</li>
+                    <li>Protect GM <b>≥40%</b> (hard gate <b>39.5%</b>)</li>
+                    <li>Noodles & broth are the primary engines</li>
+                    <li>Dedicated field force (staged, ROI-gated)</li>
+                    <li>Focused foodservice growth from Sweden base</li>
+                    <li>Strict discipline: <b>OH ≤9%</b> and <b>A&P ≤9%</b></li>
+                  </ul>
+                </div>
+              </div>
+
+              <div>
+                <div class="chart-box" style="height:370px;">
+                  <canvas id="chartExec"></canvas>
+                </div>
+                <div style="margin-top:12px;" class="info-box">
+                  <div class="info-box-title">Winning equation</div>
+                  <ul>
+                    <li>Availability × execution × brand relevance</li>
+                    <li>Scale what works, stop what doesn’t (gates)</li>
+                    <li>Consumer obsession as the starting point</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "In one slide: we start from 63.1 million euros at 41.3 percent gross margin. We grow to 100 million by 2029 with roughly 12 percent CAGR, while protecting gross margin above 40 percent. Noodles and broth are the growth engines, execution is the multiplier, and financial discipline is non-negotiable.",
+        chartInit: (root) => {
+          if (!window.Chart) return [];
+          const ctx = root.querySelector('#chartExec')?.getContext('2d');
+          if(!ctx) return [];
+          return [new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: ['2025','2026','2027','2028','2029'],
+              datasets: [{
+                label: 'Net Sales (M€)',
+                data: [63.1, 71, 81, 91, 100],
+                borderWidth: 4,
+                tension: 0.32,
+                fill: true,
+                borderColor: '#00f0ff',
+                backgroundColor: 'rgba(0,240,255,0.10)',
+                pointBackgroundColor: '#00f0ff',
+                pointBorderColor: '#00f0ff',
+                pointRadius: 6,
+                pointHoverRadius: 10
+              }]
+            },
+            options: {
+              maintainAspectRatio: false,
+              plugins: { legend: { labels: { color:'#e0f4ff', font: { family: 'Rajdhani' } } } },
+              scales: {
+                x: { ticks: { color:'#00f0ff' }, grid:{ color:'rgba(0,240,255,0.1)' } },
+                y: { ticks: { color:'#4a7a8a' }, grid:{ color:'rgba(0,240,255,0.1)' }, min: 55, max: 110 }
+              }
+            }
+          })];
+        }
+      },
+
+      {
+        key: "pl_landing",
+        name: "2025 Baseline",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">2025 Closing Baseline — P&L Landing</div>
+            <div class="scroll-area">
+              <table>
+                <thead>
+                  <tr><th>Metric</th><th>Value</th><th>Signal</th><th>Implication</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><b>Net Sales (Core)</b></td><td>63.1M€</td><td style="color:var(--green);">+7%</td><td style="color:rgba(224,244,255,0.75);">We have demand momentum — execution converts it.</td></tr>
+                  <tr><td>• Noodles</td><td>1.2M€</td><td style="color:var(--green);">+259%</td><td style="color:rgba(224,244,255,0.75);">Breakout category; scale with control (availability + repeat).</td></tr>
+                  <tr><td>• Broth</td><td>15.2M€</td><td style="color:var(--green);">+11%</td><td style="color:rgba(224,244,255,0.75);">Reliable platform; premiumize and defend seasonality.</td></tr>
+                  <tr><td><b>Gross Margin</b></td><td>41.3%</td><td style="color:var(--warn);">-1.2pp</td><td style="color:rgba(224,244,255,0.75);">Protect mix; gate growth that destroys margin.</td></tr>
+                  <tr><td><b>A&P</b></td><td>5.6%</td><td style="color:var(--cyan);">up</td><td style="color:rgba(224,244,255,0.75);">Room to invest—must be ROI-tracked.</td></tr>
+                  <tr><td><b>Overhead</b></td><td>~8%</td><td style="color:var(--warn);">pressure</td><td style="color:rgba(224,244,255,0.75);">Scale with discipline; avoid cost drift.</td></tr>
+                  <tr><td><b>EBIT</b></td><td>15.3M€</td><td>24%</td><td style="color:rgba(224,244,255,0.75);">Strong base; growth must keep profitability quality.</td></tr>
+                </tbody>
+              </table>
+
+              <div class="info-grid" style="margin-top:16px;">
+                <div class="info-box">
+                  <div class="info-box-title green">KEEP</div>
+                  <ul>
+                    <li>Volume momentum and core brand trust</li>
+                    <li>Broth platform strength</li>
+                    <li>Profitability baseline</li>
+                  </ul>
+                </div>
+                <div class="info-box">
+                  <div class="info-box-title warn">FIX</div>
+                  <ul>
+                    <li>Mix pressure & promotional discipline</li>
+                    <li>Execution dilution (shared resources)</li>
+                    <li>Cost drift risk (A&P + OH)</li>
+                  </ul>
+                </div>
+                <div class="info-box">
+                  <div class="info-box-title">UNLOCK</div>
+                  <ul>
+                    <li>Noodles scale: distribution + repeat</li>
+                    <li>RTM standards and field execution</li>
+                    <li>Health/premium innovation pipeline</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "This is our real baseline: 63.1 million euros with strong volume, broth at 15.2 million and noodles breaking out from a small base. Gross margin is healthy but must be protected. Our job is to keep momentum, fix execution dilution and cost drift, and unlock noodles and broth through disciplined scaling."
+      },
+
+      {
+        key: "market_context",
+        name: "Market Context",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Market Context & Strategic Diagnosis</div>
+
+            <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="stat-card"><div class="stat-value">3–5%</div><div class="stat-label">Nordics packaged food CAGR</div></div>
+              <div class="stat-card"><div class="stat-value" style="color:var(--green);">4–6%</div><div class="stat-label">Foodservice CAGR</div></div>
+              <div class="stat-card"><div class="stat-value">HIGH</div><div class="stat-label">Brand trust & fit</div></div>
+            </div>
+
+            <div class="info-grid">
+              <div class="info-box">
+                <div class="info-box-title">Consumer reality (2026+)</div>
+                <ul>
+                  <li>Convenience + comfort, but with health cues</li>
+                  <li>Premiumization: pay for quality and function</li>
+                  <li>Sustainability and transparency are expected</li>
+                  <li>Digital discovery influences retail decisions</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title green">Where we have a right to win</div>
+                <ul>
+                  <li>Broth: trusted, scalable, seasonal strength</li>
+                  <li>Noodles: low penetration + fast adoption</li>
+                  <li>Convenience platforms with Nordic taste</li>
+                  <li>Foodservice: leverage Sweden base into FI/NO</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title warn">Hard truths</div>
+                <ul>
+                  <li>Growth without availability is wasted A&P</li>
+                  <li>Promo-driven growth risks GM erosion</li>
+                  <li>Execution quality is the constraint, not ideas</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "The market grows steadily, but the biggest upside is in foodservice and in the convenience platforms where trust, quality, and health cues matter. Our right to win is strongest in broth and noodles. The constraint is execution quality: availability, shelf standards, and disciplined investment."
+      },
+
+      {
+        key: "value_framework",
+        name: "Value Creation",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Value Creation Framework</div>
+            <div class="subtitle" style="margin-bottom:14px;">Four pillars — engineered growth, not hope.</div>
+
+            <div class="info-grid" style="grid-template-columns: repeat(2, 1fr);">
+              <div class="info-box">
+                <div class="info-box-title green">1) Consumer obsession</div>
+                <ul>
+                  <li>Insights → decisions → weekly learning loop</li>
+                  <li>Quality experience: taste, availability, value</li>
+                  <li>NPS ambition: <b>&gt;50</b></li>
+                </ul>
+                <div style="margin-top:10px;"><span class="badge">Start with the consumer</span></div>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">2) Mix & premiumization</div>
+                <ul>
+                  <li>Health/premium NPD as mix engine</li>
+                  <li>Protect GM <b>≥40%</b></li>
+                  <li>Quarterly mix improvement targets</li>
+                </ul>
+                <div style="margin-top:10px;"><span class="badge">Protect margin while scaling</span></div>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">3) Execution excellence</div>
+                <ul>
+                  <li>RTM standards and shelf ownership</li>
+                  <li>Dedicated field force (staged)</li>
+                  <li>Foodservice focus with the right formats</li>
+                </ul>
+                <div style="margin-top:10px;"><span class="badge">Own shelf. Own standards.</span></div>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title warn">4) Disciplined scaling</div>
+                <ul>
+                  <li>Hard gates and stop rules</li>
+                  <li>ROI discipline on A&P and headcount</li>
+                  <li>Caps: <b>OH ≤9%</b> and <b>A&P ≤9%</b></li>
+                </ul>
+                <div style="margin-top:10px;"><span class="badge">Controlled aggression</span></div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "Our value creation is built on four pillars: consumer obsession, premiumization and mix, execution excellence, and disciplined scaling with hard gates. This is how we grow fast without losing profitability quality."
+      },
+
+      {
+        key: "rtm",
+        name: "Route to Market",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Route to Market Strategy</div>
+            <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:18px;">
+              <div class="info-box">
+                <div class="info-box-title">Hybrid model (control where it matters)</div>
+                <ul>
+                  <li><b>Direct:</b> Sweden (retail + foodservice)</li>
+                  <li><b>Finland:</b> Prescott</li>
+                  <li><b>Norway:</b> Haugen</li>
+                  <li><b>Denmark:</b> Conaxess</li>
+                  <li><b>Baltics:</b> selected local distributors</li>
+                </ul>
+
+                <div style="margin-top:12px; padding:12px; border:1px solid rgba(0,240,255,0.16); border-radius:10px; background: rgba(0,0,0,0.25);">
+                  <div class="info-box-title green" style="margin-bottom:6px;">2029 channel target mix</div>
+                  <div style="color:rgba(224,244,255,0.85);">70–75% Retail • 20–25% Foodservice • 5–10% E-commerce</div>
+                </div>
+
+                <div style="margin-top:12px;" class="info-grid">
+                  <div class="info-box" style="padding:14px;">
+                    <div class="info-box-title">Non-negotiable standards</div>
+                    <ul>
+                      <li>OSA &gt; 95% on focus SKUs</li>
+                      <li>Planogram compliance &gt; 90%</li>
+                      <li>Promo compliance with evidence</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="chart-box" style="height:320px;">
+                  <canvas id="mixChart"></canvas>
+                </div>
+                <div class="info-box" style="margin-top:12px;">
+                  <div class="info-box-title warn">Distributor governance</div>
+                  <ul>
+                    <li>Quarterly performance reviews</li>
+                    <li>2-quarter underperformance → corrective plan</li>
+                    <li>Repeat underperformance → alternative RTM</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "Route to market is hybrid. We keep direct control in Sweden, and we drive distributor performance in Finland, Norway, Denmark and the Baltics through clear standards and governance. Our target mix by 2029 is roughly 70 to 75 percent retail, 20 to 25 percent foodservice, and selective e-commerce.",
+        chartInit: (root) => {
+          if (!window.Chart) return [];
+          const ctx = root.querySelector('#mixChart')?.getContext('2d');
+          if(!ctx) return [];
+          return [new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: ['Retail (73%)', 'Foodservice (22%)', 'E-comm (5%)'],
+              datasets: [{
+                data: [73, 22, 5],
+                backgroundColor: ['rgba(0,240,255,0.85)', 'rgba(0,255,136,0.85)', 'rgba(74,122,138,0.85)'],
+                borderColor: '#030812',
+                borderWidth: 3
+              }]
+            },
+            options: {
+              maintainAspectRatio: false,
+              plugins: { legend: { position: 'bottom', labels: { color:'#e0f4ff', font: { family: 'Rajdhani' } } } }
+            }
+          })];
+        }
+      },
+
+      {
+        key: "field_force",
+        name: "Field Force",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Field Force Transition (Hybrid, ROI-Gated)</div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
+              <div>
+                <div class="info-box" style="margin-bottom:12px;">
+                  <div class="info-box-title warn">Current state</div>
+                  <div style="font-size:1.4rem; font-weight:700;">Outsourced shared force</div>
+                  <div style="margin-top:6px; color:rgba(224,244,255,0.75);">Coverage exists — brand focus and standards are diluted.</div>
+                </div>
+
+                <div class="info-box">
+                  <div class="info-box-title green">Target state</div>
+                  <div style="font-size:1.4rem; font-weight:700;">Dedicated GBFoods force</div>
+                  <ul style="margin-top:10px;">
+                    <li><b>2026:</b> pilot 5–10 reps (Sweden), clear KPIs</li>
+                    <li><b>2027:</b> scale to 15–20 reps if gates pass</li>
+                    <li>Focus: shelf, availability, promo execution, sampling</li>
+                  </ul>
+                </div>
+
+                <div style="margin-top:12px; padding:12px; border:1px solid rgba(255,170,0,0.55); background: rgba(255,170,0,0.10); border-radius:10px;">
+                  <div class="micro" style="color:var(--warn);">Hard gate (mid-2026)</div>
+                  <div style="margin-top:6px; color:rgba(224,244,255,0.86);">If uplift <b>8%</b>, pause rollout and redesign.</div>
+                </div>
+              </div>
+
+              <div>
+                <div class="chart-box" style="height:320px;">
+                  <canvas id="upliftChart"></canvas>
+                </div>
+                <div class="info-box" style="margin-top:12px;">
+                  <div class="info-box-title">What “uplift” means (evidence)</div>
+                  <ul>
+                    <li>OSA improvement on focus SKUs</li>
+                    <li>Distribution gains on noodles & broth</li>
+                    <li>Sell-out acceleration vs control stores</li>
+                    <li>Promo compliance and visibility proof</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "Execution is the multiplier. We move from a shared outsourced model to a dedicated GBFoods field force, starting with a 2026 pilot. We only scale if evidence proves impact. Mid-2026 gate: if uplift is under 8 percent, we pause and redesign."
+        ,
+        chartInit: (root) => {
+          if (!window.Chart) return [];
+          const ctx = root.querySelector('#upliftChart')?.getContext('2d');
+          if(!ctx) return [];
+          return [new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['Baseline', 'Target Uplift'],
+              datasets: [{
+                label: 'Execution Impact %',
+                data: [0, 12.5],
+                backgroundColor: ['rgba(74,122,138,0.65)', 'rgba(0,240,255,0.85)'],
+                borderRadius: 10
+              }]
+            },
+            options: {
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { ticks: { color:'#00f0ff' }, grid: { display: false } },
+                y: { ticks: { color:'#4a7a8a', callback: (v) => v + '%' }, grid: { color:'rgba(0,240,255,0.1)' }, max: 16 }
+              }
+            }
+          })];
+        }
+      },
+
+      {
+        key: "foodservice",
+        name: "Foodservice",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Foodservice B2B Channel Strategy</div>
+
+            <div class="stat-grid" style="grid-template-columns: repeat(2, 1fr);">
+              <div class="stat-card"><div class="stat-value">15M€</div><div class="stat-label">2025 Sweden base</div></div>
+              <div class="stat-card"><div class="stat-value" style="color:var(--green);">20–25M€</div><div class="stat-label">2029 target (total)</div></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
+              <div class="info-box">
+                <div class="info-box-title green">Strategy (focused expansion)</div>
+                <ul>
+                  <li>Leverage Sweden base into Finland + Norway</li>
+                  <li>Build B2B/bulk formats and chef-friendly packs</li>
+                  <li>Dedicated KAMs on priority segments</li>
+                  <li>Trade activation: chefs, shows, distributor programs</li>
+                </ul>
+
+                <div style="margin-top:12px; padding:12px; border:1px solid rgba(255,170,0,0.55); background: rgba(255,170,0,0.10); border-radius:10px;">
+                  <div class="micro" style="color:var(--warn);">Hard gate (2027)</div>
+                  <div style="margin-top:6px;">If FS growth <b>12% YoY</b>, reallocate investment to retail levers.</div>
+                </div>
+              </div>
+
+              <div>
+                <div class="chart-box" style="height:280px;">
+                  <canvas id="fsChart"></canvas>
+                </div>
+                <div class="info-box" style="margin-top:12px;">
+                  <div class="info-box-title">Focus segments</div>
+                  <ul>
+                    <li>Public sector & institutional (where relevant)</li>
+                    <li>QSR and convenience food</li>
+                    <li>Workplace and catering</li>
+                    <li>Retail-adjacent meal solutions</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "Foodservice is our second growth leg. From a 15 million euro Sweden base, we expand carefully into Finland and Norway with the right formats and dedicated account focus. We gate investment: if foodservice growth is below 12 percent by 2027, we reallocate to retail growth levers.",
+        chartInit: (root) => {
+          if (!window.Chart) return [];
+          const ctx = root.querySelector('#fsChart')?.getContext('2d');
+          if(!ctx) return [];
+          return [new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: ['2025','2026','2027','2028','2029'],
+              datasets: [{
+                label: 'Foodservice (M€)',
+                data: [15, 17, 19, 21, 22.5],
+                borderColor: '#00ff88',
+                backgroundColor: 'rgba(0,255,136,0.10)',
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true
+              }]
+            },
+            options: {
+              maintainAspectRatio: false,
+              plugins: { legend: { labels: { color:'#e0f4ff' } } },
+              scales: {
+                x: { ticks: { color:'#00f0ff' }, grid:{ color:'rgba(0,240,255,0.1)' } },
+                y: { ticks: { color:'#4a7a8a' }, grid:{ color:'rgba(0,240,255,0.1)' }, min: 10, max: 25 }
+              }
+            }
+          })];
+        }
+      },
+
+      {
+        key: "org",
+        name: "Organization",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Organization Structure</div>
+            <div class="subtitle" style="margin-bottom:14px;">Structure follows strategy — clear ownership and faster decisions.</div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title green">What we optimize for</div>
+                <ul>
+                  <li>Clear accountability per channel & platform</li>
+                  <li>Fast decisions: fewer handoffs</li>
+                  <li>Strong commercial engine with field execution</li>
+                  <li>Innovation and insights embedded, not “side work”</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">Core operating roles</div>
+                <ul>
+                  <li>GM / leadership team for priorities and gates</li>
+                  <li>Commercial / Sales: RTM, customer plans, execution</li>
+                  <li>Marketing: brand, demand creation, insights</li>
+                  <li>S&OP+: demand/supply alignment, service, portfolio</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title warn">Avoid these failure modes</div>
+                <ul>
+                  <li>Dual ownership (nobody owns the outcome)</li>
+                  <li>Too many priorities (no scale)</li>
+                  <li>Investing before availability and execution are stable</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">Decision rights (simple)</div>
+                <ul>
+                  <li>One owner per KPI</li>
+                  <li>Gates trigger automatic review</li>
+                  <li>Stop rules are pre-agreed</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "Organization must match the strategy: clear ownership per channel and platform, fewer handoffs, and embedded insights and S&OP+ rhythm. We optimize for speed and accountability, and we remove dual ownership and priority overload."
+      },
+
+      {
+        key: "ways_of_working",
+        name: "Ways of Working",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Ways of Working (Execution OS)</div>
+            <div class="subtitle" style="margin-bottom:14px;">Cadence that makes execution measurable and fast.</div>
+
+            <div class="scroll-area">
+              <table>
+                <thead>
+                  <tr><th>Cadence</th><th>Forum</th><th>Purpose</th><th>Outputs</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><b>Weekly</b></td><td>Commercial pulse</td><td>Sell-out, availability, promo compliance</td><td>Actions, store priorities, evidence</td></tr>
+                  <tr><td><b>Monthly</b></td><td>S&OP+</td><td>Demand/supply, portfolio, service</td><td>Plan alignment, risk mitigation</td></tr>
+                  <tr><td><b>Quarterly</b></td><td>Customer JBPs</td><td>Growth plans with key customers</td><td>Signed activity plans, funding</td></tr>
+                  <tr><td><b>Quarterly</b></td><td>Innovation council</td><td>NPD pipeline, kill/scale decisions</td><td>Go/No-Go, launch quality</td></tr>
+                  <tr><td><b>Bi-monthly</b></td><td>Field excellence</td><td>Standards, training, best practices</td><td>Scorecards, capability upgrades</td></tr>
+                </tbody>
+              </table>
+
+              <div class="info-grid" style="margin-top:14px;">
+                <div class="info-box">
+                  <div class="info-box-title">Principles</div>
+                  <ul>
+                    <li>If it’s not in the system with evidence, it didn’t happen</li>
+                    <li>One-page decisions with clear owners</li>
+                    <li>Less reporting, more action</li>
+                  </ul>
+                </div>
+                <div class="info-box">
+                  <div class="info-box-title green">Speed enablers</div>
+                  <ul>
+                    <li>Simple dashboards with weekly thresholds</li>
+                    <li>Pre-agreed gates → automatic review</li>
+                    <li>Clear escalation paths</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "To scale, we need an execution operating system: weekly commercial pulse, monthly S&OP plus, quarterly customer plans, and a disciplined innovation council. The rule is simple: evidence-driven execution, one owner per decision, and gates that trigger action automatically."
+      },
+
+      {
+        key: "marketing",
+        name: "Marketing",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Marketing & Campaign Plan</div>
+            <div class="subtitle" style="margin-bottom:14px;">Spend as investment — tied to availability and execution.</div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title green">2026 priorities</div>
+                <ul>
+                  <li>Focus platforms: noodles + broth + priority brands</li>
+                  <li>Digital-first demand creation and retail activation</li>
+                  <li>Sampling where it converts repeat</li>
+                  <li>Retail media and content tied to store availability</li>
+                </ul>
+                <div style="margin-top:10px;"><span class="badge">A&P cap ≤ 9% (ROI tracked)</span></div>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">Always-on measurement</div>
+                <ul>
+                  <li>Incremental volume vs baseline</li>
+                  <li>Price/mix impact & GM effect</li>
+                  <li>Distribution and OSA impact</li>
+                  <li>Creative learning loop: test & learn</li>
+                </ul>
+                <div style="margin-top:10px;"><span class="badge">No availability = no spend</span></div>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;" class="info-box">
+              <div class="info-box-title warn">Guardrails</div>
+              <ul>
+                <li>Stop spending if OSA on focus SKUs is below threshold</li>
+                <li>Promotions must be margin-accretive or strategic</li>
+                <li>Campaigns require clear hypotheses and post-mortems</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        script: "Marketing accelerates what execution can deliver. In 2026 we focus investment on noodles and broth platforms and priority brands, digital-first activation, and sampling that drives repeat. Spend is ROI-tracked and capped. And we do not spend into poor availability."
+      },
+
+      {
+        key: "npd",
+        name: "NPD",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">NPD Plan — Health & Premium Focus</div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
+              <div>
+                <div class="big-stat" style="padding:18px;">
+                  <div class="big-stat-value" style="font-size:2.8rem;">≥20%</div>
+                  <div class="big-stat-label">NS from products &lt;3 years</div>
+                </div>
+
+                <div class="info-box" style="margin-top:12px;">
+                  <div class="info-box-title">Pipeline design</div>
+                  <ul>
+                    <li>4–6 meaningful launches per year (quality over quantity)</li>
+                    <li>Health cues: plant-based, protein, low salt where relevant</li>
+                    <li>Premium cues: taste, provenance, functional benefit</li>
+                    <li>Two-speed: fast tests + scaled winners</li>
+                  </ul>
+                </div>
+
+                <div style="margin-top:12px; padding:12px; border:1px solid rgba(255,170,0,0.55); background: rgba(255,170,0,0.10); border-radius:10px;">
+                  <div class="micro" style="color:var(--warn);">Quality gate</div>
+                  <div style="margin-top:6px;">Weak launches are killed fast — no “zombie SKUs”.</div>
+                </div>
+              </div>
+
+              <div>
+                <div class="chart-box" style="height:300px;">
+                  <canvas id="npdChart"></canvas>
+                </div>
+                <div class="info-box" style="margin-top:12px;">
+                  <div class="info-box-title green">2026–2027 examples (illustrative)</div>
+                  <ul>
+                    <li>Broth: premium + health variants (function + taste)</li>
+                    <li>Noodles: local flavors, premium bowls, better nutrition</li>
+                    <li>Foodservice formats: bulk, chef packs, easy prep</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "Innovation must be meaningful. We focus on health and premium, with four to six high-quality launches per year and a clear KPI: at least twenty percent of sales coming from products younger than three years. We test fast, and we kill weak launches quickly."
+        ,
+        chartInit: (root) => {
+          if (!window.Chart) return [];
+          const ctx = root.querySelector('#npdChart')?.getContext('2d');
+          if(!ctx) return [];
+          return [new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['2026','2027','2028','2029'],
+              datasets: [{
+                label: 'Meaningful launches',
+                data: [4, 6, 6, 6],
+                backgroundColor: 'rgba(0,240,255,0.75)',
+                borderRadius: 10
+              }]
+            },
+            options: {
+              maintainAspectRatio: false,
+              plugins: { legend: { labels: { color:'#e0f4ff' } } },
+              scales: {
+                x: { ticks: { color:'#00f0ff' }, grid: { display:false } },
+                y: { ticks: { color:'#4a7a8a' }, grid: { color:'rgba(0,240,255,0.1)' }, max: 7 }
+              }
+            }
+          })];
+        }
+      },
+
+      {
+        key: "financials",
+        name: "Financials",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Financial Projections & Budget Framework</div>
+            <div class="subtitle" style="margin-bottom:14px;">Scale profitably — guardrails are not optional.</div>
+
+            <div class="scroll-area">
+              <table>
+                <thead>
+                  <tr><th>Year</th><th>Net Sales</th><th>GM%</th><th>A&P</th><th>Overhead</th><th>EBIT%</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><b>2025</b></td><td>63.1M€</td><td>41.3%</td><td>5.6%</td><td>~8%</td><td>24%</td></tr>
+                  <tr><td><b>2026</b></td><td>70–72M€</td><td>≥40%</td><td>≤9%</td><td>≤9%</td><td>24–25%</td></tr>
+                  <tr><td><b>2027</b></td><td>80–82M€</td><td>≥40%</td><td>≤9%</td><td>≤9%</td><td>~25%</td></tr>
+                  <tr><td><b>2028</b></td><td>90–92M€</td><td>40–41%</td><td>≤9%</td><td>≤9%</td><td>~26%</td></tr>
+                  <tr style="background:rgba(0,240,255,0.08);"><td><b style="color:var(--cyan);">2029</b></td><td style="color:var(--cyan);">100M€</td><td>≥41%</td><td>≤9%</td><td>≤9%</td><td style="color:var(--green);">26–28%</td></tr>
+                </tbody>
+              </table>
+
+              <div style="margin-top:14px; padding:12px; border:1px solid rgba(255,77,109,0.55); background: rgba(255,77,109,0.10); border-radius:10px;">
+                <div class="micro" style="color:var(--danger);">Hard gates</div>
+                <div style="margin-top:6px; color:rgba(224,244,255,0.86);">Any quarter GM <b>39.5%</b> → immediate mix/price/cost review. A&P and OH drift → immediate reallocation.</div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "This is the disciplined financial model: we grow to 100 million by 2029 while keeping overhead and A and P at or below nine percent each, and keeping gross margin above forty percent. The hard gate is 39.5 percent gross margin: if we breach it, we act immediately."
+      },
+
+      {
+        key: "kpis",
+        name: "KPIs",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Key Performance Indicators</div>
+
+            <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="stat-card"><div class="stat-value">100M€</div><div class="stat-label">Net Sales 2029</div></div>
+              <div class="stat-card"><div class="stat-value">≥40%</div><div class="stat-label">GM floor</div></div>
+              <div class="stat-card"><div class="stat-value">&gt;50</div><div class="stat-label">Consumer NPS</div></div>
+              <div class="stat-card"><div class="stat-value">≤9%</div><div class="stat-label">Overhead cap</div></div>
+              <div class="stat-card"><div class="stat-value">≤9%</div><div class="stat-label">A&P cap</div></div>
+              <div class="stat-card"><div class="stat-value">≥20%</div><div class="stat-label">Innovation revenue</div></div>
+            </div>
+
+            <div class="info-grid" style="margin-top:14px;">
+              <div class="info-box">
+                <div class="info-box-title warn">Hard gates (stop rules)</div>
+                <ul>
+                  <li>GM < 39.5% → immediate review</li>
+                  <li>Field force uplift < 8% → pause rollout</li>
+                  <li>Foodservice growth < 12% by 2027 → reallocate</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title green">Lead indicators (weekly/monthly)</div>
+                <ul>
+                  <li>OSA on focus SKUs</li>
+                  <li>Distribution & share of shelf</li>
+                  <li>Promo compliance with evidence</li>
+                  <li>Sell-out velocity vs baseline</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "We measure what we want to happen. Our KPIs balance growth and quality: sales, gross margin, consumer NPS, overhead and A and P discipline, and innovation contribution. Lead indicators like availability, distribution, and promo compliance ensure we act early, not late."
+      },
+
+      {
+        key: "tools_data",
+        name: "Tools & Data",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Tools, IT Systems & Data Architecture</div>
+            <div class="subtitle" style="margin-bottom:14px;">A single truth system that turns data into action.</div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title green">Commercial execution stack</div>
+                <ul>
+                  <li>SFA / Field app: store tasks + photo evidence</li>
+                  <li>Weekly execution dashboards (OSA, compliance)</li>
+                  <li>Retail media tracking tied to store availability</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">S&OP+ backbone</div>
+                <ul>
+                  <li>Demand planning and forecast discipline</li>
+                  <li>Supply risk and OTIF monitoring</li>
+                  <li>Portfolio and SKU rationalization gates</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">Consumer insights</div>
+                <ul>
+                  <li>Continuous listening (social, search, surveys)</li>
+                  <li>Test & learn experiments and learning library</li>
+                  <li>Innovation scorecards (repeat intent, trial conversion)</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title warn">Rule</div>
+                <ul>
+                  <li>If it’s not measured, it’s not managed</li>
+                  <li>If it’s not in the system with evidence, it didn’t happen</li>
+                  <li>Dashboards must trigger actions, not reports</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "Tools and data turn strategy into reality. We need a commercial execution stack for field evidence and dashboards, an S&OP plus backbone for demand and supply alignment, and a consumer insights system for learning. The rule is simple: data must trigger action, not reporting."
+      },
+
+      {
+        key: "risks",
+        name: "Risks",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Risks & Mitigation Measures</div>
+            <div class="subtitle" style="margin-bottom:14px;">We scale aggressively — with kill-switches.</div>
+
+            <div class="scroll-area">
+              <table>
+                <thead>
+                  <tr><th>Risk</th><th>Trigger</th><th>Mitigation</th><th>Gate</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><b>GM erosion</b></td>
+                    <td>GM < 39.5%</td>
+                    <td>Mix, pricing, promo discipline, COGS actions</td>
+                    <td style="color:var(--danger);"><b>Immediate review</b></td>
+                  </tr>
+                  <tr>
+                    <td><b>Field force cost without impact</b></td>
+                    <td>Uplift < 8% mid-2026</td>
+                    <td>Pause rollout; redesign coverage & standards</td>
+                    <td style="color:var(--warn);"><b>Pause</b></td>
+                  </tr>
+                  <tr>
+                    <td><b>Supply / service risk</b></td>
+                    <td>OTIF < 90%</td>
+                    <td>Safety stock, alternate suppliers, S&OP escalation</td>
+                    <td><b>Service plan</b></td>
+                  </tr>
+                  <tr>
+                    <td><b>Distributor underperformance</b></td>
+                    <td>2 quarters below target</td>
+                    <td>Corrective plan; incentives; alternative RTM option</td>
+                    <td><b>Corrective plan</b></td>
+                  </tr>
+                  <tr>
+                    <td><b>Too many priorities</b></td>
+                    <td>WIP overload</td>
+                    <td>Stop/kill list; focus on engines</td>
+                    <td><b>Quarterly reset</b></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="info-grid" style="margin-top:14px;">
+                <div class="info-box">
+                  <div class="info-box-title green">Risk posture</div>
+                  <ul>
+                    <li>We take risks on growth — not on margin quality</li>
+                    <li>We test fast, scale winners, kill losers</li>
+                    <li>Gates are pre-agreed to remove politics</li>
+                  </ul>
+                </div>
+                <div class="info-box">
+                  <div class="info-box-title warn">What we won’t do</div>
+                  <ul>
+                    <li>Spend A&P into poor availability</li>
+                    <li>Scale headcount without proven uplift</li>
+                    <li>Accept GM erosion as “temporary” without action</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "Risk management is built into the plan. Gross margin has a hard gate at 39.5 percent. Field force expansion has an uplift gate. Supply performance is managed through OTIF thresholds and S&OP escalation. And we prevent the biggest hidden risk: too many priorities."
+      },
+
+      {
+        key: "2026",
+        name: "Roadmap 2026",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Implementation Roadmap — 2026</div>
+            <div class="subtitle" style="margin-bottom:14px;">Validate the engines. Prove what works. Set up scaling.</div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title green">Must deliver</div>
+                <ul>
+                  <li>Field force pilot (5–10 reps) + evidence scorecard</li>
+                  <li>Noodles distribution & repeat plan (retail focus)</li>
+                  <li>Broth premium/health NPD wave 1</li>
+                  <li>Foodservice expansion pilot (FI/NO)</li>
+                  <li>Execution dashboards + S&OP+ cadence running</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">Gates & triggers</div>
+                <ul>
+                  <li>Field uplift &lt; 8% (mid-year) → pause rollout</li>
+                  <li>GM below 39.5% → price/mix/cost action</li>
+                  <li>OTIF below 90% → service escalation plan</li>
+                  <li>WIP overload → stop list and refocus</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;" class="stat-grid">
+              <div class="stat-card"><div class="stat-value">70–72M€</div><div class="stat-label">Target net sales</div></div>
+              <div class="stat-card"><div class="stat-value">≥40%</div><div class="stat-label">GM guardrail</div></div>
+              <div class="stat-card"><div class="stat-value">Pilot</div><div class="stat-label">Field force proof</div></div>
+            </div>
+          </div>
+        `,
+        script: "2026 is the validation year. We run the field force pilot and prove uplift, scale noodles through distribution and repeat, launch the first premium and health innovation wave, pilot foodservice expansion, and put dashboards and S&OP plus cadence in place."
+      },
+
+      {
+        key: "2027",
+        name: "Roadmap 2027",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Implementation Roadmap — 2027</div>
+            <div class="subtitle" style="margin-bottom:14px;">Scale the winners. Standardize execution.</div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title green">Scale-up moves</div>
+                <ul>
+                  <li>Field force scale to 15–20 reps (if gates pass)</li>
+                  <li>Noodles platform expansion + stronger retail programs</li>
+                  <li>Foodservice KAM model + priority segments</li>
+                  <li>Innovation wave 2 with premiumization focus</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">Capability upgrades</div>
+                <ul>
+                  <li>Best practice playbooks by chain and format</li>
+                  <li>Retail media and digital amplification</li>
+                  <li>Supply resilience and service improvements</li>
+                  <li>Quarterly portfolio rationalization discipline</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;" class="stat-grid">
+              <div class="stat-card"><div class="stat-value">80–82M€</div><div class="stat-label">Target net sales</div></div>
+              <div class="stat-card"><div class="stat-value">~25%</div><div class="stat-label">EBIT% ambition</div></div>
+              <div class="stat-card"><div class="stat-value">Scale</div><div class="stat-label">Execution winners</div></div>
+            </div>
+          </div>
+        `,
+        script: "2027 is the scale year. If gates pass, we expand field force, accelerate noodles and broth platforms, professionalize foodservice with dedicated key account focus, and standardize the execution playbooks that make growth repeatable."
+      },
+
+      {
+        key: "2028",
+        name: "Roadmap 2028",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Implementation Roadmap — 2028</div>
+            <div class="subtitle" style="margin-bottom:14px;">Accelerate with governance — growth without chaos.</div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title green">Acceleration levers</div>
+                <ul>
+                  <li>Platform expansion across Nordics with proven playbooks</li>
+                  <li>Increased mix from premium/health winners</li>
+                  <li>Foodservice momentum with sustainable service levels</li>
+                  <li>Automation: dashboards that trigger actions</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title warn">Complexity control</div>
+                <ul>
+                  <li>Limit SKU proliferation (portfolio gates)</li>
+                  <li>Protect service and quality while scaling</li>
+                  <li>Keep OH and A&P within caps</li>
+                  <li>Stop list for low-ROI initiatives</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;" class="stat-grid">
+              <div class="stat-card"><div class="stat-value">90–92M€</div><div class="stat-label">Target net sales</div></div>
+              <div class="stat-card"><div class="stat-value">40–41%</div><div class="stat-label">GM% target band</div></div>
+              <div class="stat-card"><div class="stat-value">Speed</div><div class="stat-label">Playbooks at scale</div></div>
+            </div>
+          </div>
+        `,
+        script: "2028 is acceleration. We expand the proven platforms and playbooks, increase premium and health mix, and scale foodservice without damaging service or margin. Complexity is controlled through portfolio gates, stop lists, and strict cost caps."
+      },
+
+      {
+        key: "2029",
+        name: "Roadmap 2029",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Implementation Roadmap — 2029</div>
+            <div class="subtitle" style="margin-bottom:14px;">Land at 100M€ — and make it a repeatable system.</div>
+
+            <div class="big-stat" style="margin-bottom:14px;">
+              <div class="big-stat-value">100M€</div>
+              <div class="big-stat-label">Net sales target</div>
+            </div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title green">What “win” looks like</div>
+                <ul>
+                  <li>Strong platforms: noodles + broth + priority brands</li>
+                  <li>Execution culture with evidence-driven standards</li>
+                  <li>Stable service levels and reliable supply</li>
+                  <li>Innovation engine delivering meaningful share of sales</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">Financial quality</div>
+                <ul>
+                  <li>GM ≥ 41% and stable</li>
+                  <li>OH and A&P within caps</li>
+                  <li>EBIT 26–28% ambition band</li>
+                  <li>Growth that compounds, not resets</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `,
+        script: "2029 is the landing. We achieve 100 million euros and, more importantly, we make it repeatable: stable platforms, disciplined execution culture, strong service, and financial quality that holds as we scale."
+      },
+
+      {
+        key: "summary",
+        name: "Summary",
+        html: `
+          <div class="slide-content">
+            <div class="section-title">Summary — What We Commit To</div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title green">The plan in one sentence</div>
+                <div style="font-size:1.15rem; line-height:1.25; color:rgba(224,244,255,0.9);">
+                  Build noodles and broth as growth engines, upgrade execution through RTM and field force, and scale with strict financial gates.
+                </div>
+                <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                  <span class="badge">Consumer-first</span>
+                  <span class="badge">Evidence-led</span>
+                  <span class="badge">Gated scaling</span>
+                </div>
+              </div>
+
+              <div class="info-box">
+                <div class="info-box-title warn">Non-negotiables</div>
+                <ul>
+                  <li>GM protected (hard gate 39.5%)</li>
+                  <li>OH ≤9% and A&P ≤9%</li>
+                  <li>Scale field force only with proven uplift</li>
+                  <li>No spend without availability</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="stat-grid" style="margin-top:14px; grid-template-columns: repeat(4, 1fr);">
+              <div class="stat-card"><div class="stat-value">63M€</div><div class="stat-label">Start</div></div>
+              <div class="stat-card"><div class="stat-value" style="color:var(--green);">100M€</div><div class="stat-label">Destination</div></div>
+              <div class="stat-card"><div class="stat-value">4</div><div class="stat-label">Pillars</div></div>
+              <div class="stat-card"><div class="stat-value">Gates</div><div class="stat-label">Risk control</div></div>
+            </div>
+          </div>
+        `,
+        script: "To summarize: we scale to 100 million by building the noodles and broth engines, upgrading execution through route to market and a dedicated field force, and enforcing strict financial guardrails and gates. These non-negotiables make growth credible and repeatable."
+      },
+
+      {
+        key: "next_steps",
+        name: "Next Steps",
+        html: `
+          <div class="slide-content" style="display:flex; flex-direction:column; justify-content:center; height:100%;">
+            <div class="section-title" style="text-align:center;">Next Steps (30/60/90 days)</div>
+            <div class="subtitle" style="text-align:center; margin-bottom:18px;">Turn strategy into action — with owners and dates.</div>
+
+            <div class="info-grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="info-box">
+                <div class="info-box-title green">Next 30 days</div>
+                <ul>
+                  <li>Confirm 2026 priorities & funding allocation</li>
+                  <li>Define field force pilot design + measurement</li>
+                  <li>Lock noodles & broth focus SKU list and OSA targets</li>
+                  <li>Set weekly cadence and dashboards</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">Next 60 days</div>
+                <ul>
+                  <li>Launch field pilot and store standards program</li>
+                  <li>Customer JBP refresh (top customers)</li>
+                  <li>NPD wave 1 briefs finalized + go/no-go gates</li>
+                  <li>Foodservice expansion pilot plan (FI/NO)</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title warn">Next 90 days</div>
+                <ul>
+                  <li>First pilot results & corrective actions</li>
+                  <li>Execution scorecards running weekly</li>
+                  <li>Portfolio discipline: stop list and focus reset</li>
+                  <li>Supply resilience actions if needed (OTIF plan)</li>
+                </ul>
+              </div>
+              <div class="info-box">
+                <div class="info-box-title">Decision ask today</div>
+                <ul>
+                  <li>Align on the non-negotiables and gates</li>
+                  <li>Approve pilot scope and measurement</li>
+                  <li>Confirm ownership and cadence</li>
+                </ul>
+                <div style="margin-top:10px;"><span class="badge">Let’s execute.</span></div>
+              </div>
+            </div>
+
+            <div style="margin-top:18px; text-align:center; color:var(--cyan); font-family:'Orbitron',sans-serif; font-size:1.05rem; letter-spacing:0.18em;">
+              CONSUMER-OBSESSED • DISCIPLINED • UNSTOPPABLE
+            </div>
+          </div>
+        `,
+        script: "The plan becomes real in the next 30, 60, and 90 days. We confirm priorities and funding, design and launch the field force pilot with clear measurement, lock focus SKUs and availability targets, refresh customer plans, and run the cadence. Today’s ask is alignment on the non-negotiables, the gates, and the ownership."
+      }
+    ];
+
+    // =============================================================
+    // JOURNEY NOTES (Presenter panel) — mapped by slide.key
+    // =============================================================
+
+    const journeyNotes = {
+      title: {
+        act: 'ACT 0 — Hook',
+        say: 'We start strong. Now we choose disciplined acceleration to 100M€ by 2029.',
+        proof: ['2025 baseline: 63.1M€ core sales', 'GM 41.3% (protect margin quality)', 'Gates: GM 39.5%, field uplift 8%, caps 9%/9%'],
+        ask: 'Align on ambition + the rule: we only scale what proves itself.',
+        bridge: 'First: map the journey so everyone sees the logic.'
+      },
+      agenda: {
+        act: 'ACT 0 — Map',
+        say: 'Baseline → levers → operating system → roadmap → commitment.',
+        proof: ['Each section ends with a decision or gate', 'Roadmap 2026–2029: scale with proof'],
+        ask: 'Agree to keep discussion anchored to the guardrails and gates.',
+        bridge: 'Let’s lock the baseline so we don’t argue about starting points.'
+      },
+      exec_summary: {
+        act: 'ACT 1 — Promise',
+        say: '100M€ is a stack of levers, not one bet — with profitability discipline.',
+        proof: ['~12% CAGR path', 'OH ≤9% and A&P ≤9%', 'Noodles + broth are the engines'],
+        ask: 'Confirm the “winning equation” and funding focus.',
+        bridge: 'Now, the truth: what the baseline says we must fix and unlock.'
+      },
+      pl_landing: {
+        act: 'ACT 1 — Truth',
+        say: 'We have momentum — but execution and mix discipline decide if it scales.',
+        proof: ['Noodles breakout (+259%)', 'Broth platform (+11%)', 'GM pressure (-1.2pp)'],
+        ask: 'Agree on what we keep, what we fix, and what we unlock.',
+        bridge: 'Given this baseline, here’s the market reality we must win in.'
+      },
+      market_context: {
+        act: 'ACT 1 — Battlefield',
+        say: 'We win where trust + convenience + health/premium meet strong execution.',
+        proof: ['Packaged food growth steady, FS faster', 'Digital influences retail demand', 'Execution is the constraint'],
+        ask: 'Pick the 2 market truths we will act on immediately.',
+        bridge: 'So—how do we create value, consistently? The four-pillar framework.'
+      },
+      value_framework: {
+        act: 'ACT 2 — Choices',
+        say: 'Four pillars: consumer obsession, mix, execution, disciplined scaling.',
+        proof: ['Consumer metrics weighted', 'Mix engine via health/premium NPD', 'Hard gates remove politics'],
+        ask: 'Align that these pillars define what we fund (and what we stop).',
+        bridge: 'First lever: route to market and standards that convert demand to sales.'
+      },
+      rtm: {
+        act: 'ACT 2 — Lever 1',
+        say: 'Hybrid RTM with non-negotiable standards and distributor governance.',
+        proof: ['Channel target mix 70/25/5', 'OSA + planogram + promo compliance', 'Quarterly distributor reviews'],
+        ask: 'Agree on standards and enforcement mechanisms.',
+        bridge: 'Standards require people: field force is our execution multiplier.'
+      },
+      field_force: {
+        act: 'ACT 2 — Lever 2',
+        say: 'Move to dedicated reps—but only scale with proven uplift.',
+        proof: ['Pilot 2026, scale 2027', 'Hard gate: uplift <8% → pause', 'Evidence = OSA, distribution, sell-out'],
+        ask: 'Approve pilot scope + measurement system.',
+        bridge: 'Second growth leg: foodservice—focused, not distracting.'
+      },
+      foodservice: {
+        act: 'ACT 2 — Lever 3',
+        say: 'Grow FS from Sweden base with right formats and KAM focus.',
+        proof: ['15M€ base, 20–25M€ target', 'Gate: <12% growth by 2027 → reallocate', 'Expand FI/NO with control'],
+        ask: 'Align on priority segments and gate discipline.',
+        bridge: 'Now: make execution durable—structure and ways of working.'
+      },
+      org: {
+        act: 'ACT 3 — Operating model',
+        say: 'Clear owners, fewer handoffs, and decision rights that stick.',
+        proof: ['One owner per KPI', 'Gates trigger automatic review', 'Remove dual ownership'],
+        ask: 'Confirm ownership overlaps to remove immediately.',
+        bridge: 'Org without cadence is theory—here is the execution OS.'
+      },
+      ways_of_working: {
+        act: 'ACT 3 — Cadence',
+        say: 'Weekly pulse + monthly S&OP+ + quarterly JBPs = speed and control.',
+        proof: ['Evidence-driven execution rule', 'Dashboards trigger actions', 'Innovation council kill/scale'],
+        ask: 'Align on cadence and the “evidence” rule.',
+        bridge: 'With cadence in place, marketing becomes a multiplier—not a cost.'
+      },
+      marketing: {
+        act: 'ACT 3 — Demand creation',
+        say: 'Spend only where availability and execution can convert it.',
+        proof: ['Digital-first, test & learn', 'A&P cap ≤9%', 'Stop spend if OSA below threshold'],
+        ask: 'Approve guardrails and 2026 priorities.',
+        bridge: 'The message must be strong: innovation is the product story.'
+      },
+      npd: {
+        act: 'ACT 3 — Innovation',
+        say: 'Health/premium NPD drives mix and repeat—quality over quantity.',
+        proof: ['≥20% sales from <3yr products', '4–6 meaningful launches/year', 'Kill weak launches fast'],
+        ask: 'Agree on the KPI and kill/scale governance.',
+        bridge: 'Now we prove the whole model fits the money: financial framework.'
+      },
+      financials: {
+        act: 'ACT 4 — Discipline',
+        say: 'Grow to 100M€ with caps and hard gates that protect profitability quality.',
+        proof: ['OH ≤9%, A&P ≤9%', 'GM hard gate 39.5%', 'EBIT expands with scale + mix'],
+        ask: 'Align that guardrails are rules, not aspirations.',
+        bridge: 'If guardrails are real, KPIs must enforce them.'
+      },
+      kpis: {
+        act: 'ACT 4 — Measurement',
+        say: 'Lead indicators ensure we act early; gates ensure we stop early.',
+        proof: ['OSA, distribution, compliance, velocity', 'Balanced growth + quality KPIs', 'Gates remove debate'],
+        ask: 'Confirm which KPIs are non-negotiable weekly.',
+        bridge: 'To measure, we need a single truth system: tools and data.'
+      },
+      tools_data: {
+        act: 'ACT 4 — Single truth',
+        say: 'Tools must turn data into action, not reporting.',
+        proof: ['SFA + evidence', 'Dashboards with thresholds', 'S&OP+ backbone'],
+        ask: 'Agree on the first dashboard we review weekly.',
+        bridge: 'Now, risk: what can break the plan and how we prevent it.'
+      },
+      risks: {
+        act: 'ACT 4 — Risk gates',
+        say: 'We scale aggressively, but with kill-switches and pre-agreed actions.',
+        proof: ['GM gate 39.5%', 'Field gate 8% uplift', 'OTIF threshold 90%'],
+        ask: 'Confirm missing risks and add gates now.',
+        bridge: 'With risk control in place, we move year-by-year.'
+      },
+      '2026': {
+        act: 'ACT 5 — Year 1',
+        say: 'Validate engines: pilots, dashboards, first innovation wave, foodservice proof.',
+        proof: ['Field pilot + scorecard', 'Noodles distribution + repeat', 'S&OP+ cadence live'],
+        ask: 'Confirm what must be true by end-2026 to scale.',
+        bridge: 'If 2026 proves the model, 2027 is scale-up.'
+      },
+      '2027': {
+        act: 'ACT 5 — Year 2',
+        say: 'Scale winners and standardize playbooks.',
+        proof: ['Field force scale if gates pass', 'Foodservice KAM model', 'Innovation wave 2'],
+        ask: 'Identify the first bottleneck to remove (people/supply/customer).',
+        bridge: '2028 is acceleration—without complexity overload.'
+      },
+      '2028': {
+        act: 'ACT 5 — Year 3',
+        say: 'Accelerate with governance: grow, but control complexity.',
+        proof: ['Portfolio gates', 'Cost caps', 'Automation of action dashboards'],
+        ask: 'Agree what must be standardized by 2028.',
+        bridge: '2029 is the landing: 100M€ becomes the new normal.'
+      },
+      '2029': {
+        act: 'ACT 5 — Landing',
+        say: 'Reach 100M€ and make it repeatable: platform strength + execution culture.',
+        proof: ['GM ≥41%', 'EBIT 26–28%', 'Innovation contributes meaningfully'],
+        ask: 'Define what “win” means beyond sales (capabilities, reputation, talent).',
+        bridge: 'Now we summarize and convert into next steps.'
+      },
+      summary: {
+        act: 'ACT 6 — Commitment',
+        say: 'This plan is disciplined acceleration: engines + execution + gates.',
+        proof: ['Non-negotiables are explicit', 'Funding focus is clear', 'Stop rules are pre-agreed'],
+        ask: 'Confirm the non-negotiables you want us to be famous for.',
+        bridge: 'Finally: what happens in the next 30/60/90 days.'
+      },
+      next_steps: {
+        act: 'ACT 6 — Action',
+        say: 'Owners, dates, and cadence: Monday-morning execution.',
+        proof: ['30/60/90 day plan', 'Pilot measurement', 'Dashboards and cadence'],
+        ask: 'Approve pilot scope, ownership, and the cadence starting this week.',
+        bridge: 'Open Q&A.'
+      }
+    };
+
+    // =============================================================
+    // GLOBALS
+    // =============================================================
+
+    let currentSlide = 0;
+    let charts = [];
+    let audioCtx = null;
+    let droneNodes = [];
+    let narrationOn = true;
+    let ambientOn = true;
+    let presenterOn = false;
+    let autoAdvanceOn = true;
+    let autoTimer = null;
+
+    const synth = window.speechSynthesis;
+
+    const overlay = document.getElementById('overlay');
+    const stage = document.getElementById('stage');
+    const hud = document.getElementById('hud');
+    const content = document.getElementById('content');
+    const progressBar = document.getElementById('progress-bar');
+    const slideLabel = document.getElementById('slide-label');
+    const slideName = document.getElementById('slide-name');
+
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const btnRestart = document.getElementById('btn-restart');
+    const btnTTS = document.getElementById('btn-tts');
+    const btnAudio = document.getElementById('btn-audio');
+    const btnPresenter = document.getElementById('btn-presenter');
+    const btnAuto = document.getElementById('btn-auto');
+
+    const presenterPanel = document.getElementById('presenter-panel');
+    const pSlide = document.getElementById('p-slide');
+    const pAct = document.getElementById('p-act');
+    const pSay = document.getElementById('p-say');
+    const pProof = document.getElementById('p-proof');
+    const pAsk = document.getElementById('p-ask');
+    const pBridge = document.getElementById('p-bridge');
+
+    // =============================================================
+    // BACKGROUND: GRID
+    // =============================================================
+
+    const gridCanvas = document.getElementById('grid-canvas');
+    const gridCtx = gridCanvas.getContext('2d');
+    let gW, gH;
+
+    function resizeGrid() {
+      gW = gridCanvas.width = window.innerWidth;
+      gH = gridCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeGrid);
+    resizeGrid();
+
+    function drawGrid() {
+      gridCtx.clearRect(0, 0, gW, gH);
+
+      gridCtx.strokeStyle = 'rgba(0,240,255,0.08)';
+      gridCtx.lineWidth = 1;
+
+      const horizon = gH * 0.35;
+      const vanishX = gW / 2;
+      const gridSize = 60;
+
+      for (let y = horizon; y < gH + 100; y += gridSize) {
+        const factor = (y - horizon) / (gH - horizon);
+        gridCtx.globalAlpha = 0.1 + factor * 0.3;
+        gridCtx.beginPath();
+        gridCtx.moveTo(0, y);
+        gridCtx.lineTo(gW, y);
+        gridCtx.stroke();
+      }
+
+      const numLines = 30;
+      for (let i = -numLines; i <= numLines; i++) {
+        const bottomX = vanishX + i * gridSize * 3;
+        gridCtx.globalAlpha = 0.15;
+        gridCtx.beginPath();
+        gridCtx.moveTo(vanishX, horizon);
+        gridCtx.lineTo(bottomX, gH + 100);
+        gridCtx.stroke();
+      }
+
+      gridCtx.globalAlpha = 1;
+      requestAnimationFrame(drawGrid);
+    }
+    drawGrid();
+
+    // =============================================================
+    // BACKGROUND: PARTICLES
+    // =============================================================
+
+    const particleCanvas = document.getElementById('particle-canvas');
+    const pCtx = particleCanvas.getContext('2d');
+    let pW, pH;
+
+    function resizeParticles() {
+      pW = particleCanvas.width = window.innerWidth;
+      pH = particleCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeParticles);
+    resizeParticles();
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * pW;
+        this.y = Math.random() * pH;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.size = Math.random() * 2 + 1;
+        this.alpha = Math.random() * 0.5 + 0.2;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > pW) this.vx *= -1;
+        if (this.y < 0 || this.y > pH) this.vy *= -1;
+      }
+      draw() {
+        pCtx.beginPath();
+        pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        pCtx.fillStyle = `rgba(0,240,255,${this.alpha})`;
+        pCtx.fill();
+
+        pCtx.beginPath();
+        pCtx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+        pCtx.fillStyle = `rgba(0,240,255,${this.alpha * 0.1})`;
+        pCtx.fill();
+      }
+    }
+
+    const particles = Array.from({ length: 80 }, () => new Particle());
+
+    function animateParticles() {
+      pCtx.clearRect(0, 0, pW, pH);
+      for (const p of particles) { p.update(); p.draw(); }
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // =============================================================
+    // AUDIO
+    // =============================================================
+
+    function setupAudio() {
+      if (audioCtx) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+    }
+
+    function startDrone() {
+      if (!audioCtx) setupAudio();
+      stopDrone();
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 400;
+
+      const master = audioCtx.createGain();
+      master.gain.value = 0;
+
+      const o1 = audioCtx.createOscillator();
+      const g1 = audioCtx.createGain();
+      o1.type = 'sine';
+      o1.frequency.value = 55; // A1
+      g1.gain.value = 0.06;
+
+      const o2 = audioCtx.createOscillator();
+      const g2 = audioCtx.createGain();
+      o2.type = 'sine';
+      o2.frequency.value = 82.4; // E2
+      g2.gain.value = 0.03;
+
+      const o3 = audioCtx.createOscillator();
+      const g3 = audioCtx.createGain();
+      o3.type = 'sine';
+      o3.frequency.value = 110; // A2
+      g3.gain.value = 0.02;
+
+      o1.connect(g1); g1.connect(filter);
+      o2.connect(g2); g2.connect(filter);
+      o3.connect(g3); g3.connect(filter);
+      filter.connect(master);
+      master.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+      master.gain.setValueAtTime(0, now);
+      master.gain.linearRampToValueAtTime(0.08, now + 3);
+
+      o1.start(); o2.start(); o3.start();
+      droneNodes = [o1, o2, o3, g1, g2, g3, filter, master];
+    }
+
+    function stopDrone() {
+      if (!droneNodes.length) return;
+      try {
+        const master = droneNodes[7];
+        const now = audioCtx.currentTime;
+        master.gain.cancelScheduledValues(now);
+        master.gain.setValueAtTime(master.gain.value, now);
+        master.gain.linearRampToValueAtTime(0, now + 0.5);
+        setTimeout(() => {
+          try { droneNodes[0].stop(); } catch(e) {}
+          try { droneNodes[1].stop(); } catch(e) {}
+          try { droneNodes[2].stop(); } catch(e) {}
+          droneNodes = [];
+        }, 600);
+      } catch(e) {
+        droneNodes = [];
+      }
+    }
+
+    function ping() {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 1200;
+        const t = audioCtx.currentTime;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.02, t + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.16);
+      } catch(e) {}
+    }
+
+    // =============================================================
+    // TTS
+    // =============================================================
+
+    function speak(text, onEnd) {
+      if (!narrationOn || !text) { if (onEnd) onEnd(); return; }
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.95;
+      u.pitch = 1;
+      const voices = synth.getVoices();
+      const preferred = voices.find(v => /en-GB/i.test(v.lang)) || voices.find(v => /en-US/i.test(v.lang)) || voices[0];
+      if (preferred) u.voice = preferred;
+      u.onend = () => onEnd && onEnd();
+      u.onerror = () => onEnd && onEnd();
+      synth.speak(u);
+    }
+
+    function clearAutoTimer() {
+      if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+    }
+
+    // =============================================================
+    // PRESENTER PANEL
+    // =============================================================
+
+    function renderPresenter(slide) {
+      const note = journeyNotes[slide.key] || null;
+      pSlide.textContent = `${String(currentSlide + 1).padStart(2,'0')} / ${String(slides.length).padStart(2,'0')} • ${slide.name || slide.key}`;
+      pAct.textContent = note?.act || '—';
+      pSay.textContent = note?.say || '—';
+      pAsk.textContent = note?.ask || '—';
+      pBridge.textContent = note?.bridge || '—';
+
+      // proof list
+      pProof.innerHTML = '';
+      const items = note?.proof || [];
+      for (const it of items) {
+        const li = document.createElement('li');
+        li.textContent = it;
+        pProof.appendChild(li);
+      }
+    }
+
+    function setPresenter(on) {
+      presenterOn = !!on;
+      btnPresenter.textContent = `PRESENTER: ${presenterOn ? 'ON' : 'OFF'}`;
+      if (presenterOn) presenterPanel.classList.remove('hidden');
+      else presenterPanel.classList.add('hidden');
+    }
+
+    // =============================================================
+    // SLIDES
+    // =============================================================
+
+    function playSlide(index) {
+      clearAutoTimer();
+
+      if (index < 0) index = slides.length - 1;
+      if (index >= slides.length) index = slides.length - 1;
+      currentSlide = index;
+
+      // Cleanup charts
+      try { charts.forEach(c => c.destroy()); } catch(e) {}
+      charts = [];
+
+      const slide = slides[currentSlide];
+      content.innerHTML = `<div class="slide-content">${slide.html}</div>`;
+
+      // Init charts
+      if (slide.chartInit && window.Chart) {
+        setTimeout(() => {
+          try { charts = slide.chartInit(content) || []; } catch(e) { charts = []; }
+        }, 80);
+      }
+
+      // HUD
+      slideLabel.textContent = `${String(currentSlide + 1).padStart(2,'0')} / ${String(slides.length).padStart(2,'0')}`;
+      slideName.textContent = (slide.name || slide.key).toUpperCase();
+      progressBar.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+
+      // Presenter panel
+      renderPresenter(slide);
+
+      // Audio ping
+      if (ambientOn) ping();
+
+      // TTS
+      synth.cancel();
+      if (narrationOn && slide.script) {
+        setTimeout(() => {
+          speak(slide.script, () => {
+            if (!autoAdvanceOn) return;
+            if (currentSlide < slides.length - 1) {
+              autoTimer = setTimeout(() => playSlide(currentSlide + 1), 1200);
+            }
+          });
+        }, 450);
+      }
+    }
+
+    // =============================================================
+    // START
+    // =============================================================
+
+    function startExperience() {
+      overlay.classList.add('hidden');
+      stage.classList.remove('hidden');
+      hud.classList.remove('hidden');
+
+      setupAudio();
+      if (ambientOn) startDrone();
+
+      setPresenter(false);
+      playSlide(0);
+    }
+
+    window.startExperience = startExperience;
+
+    // =============================================================
+    // CONTROLS
+    // =============================================================
+
+    btnPrev.addEventListener('click', () => { synth.cancel(); clearAutoTimer(); playSlide(currentSlide - 1); });
+    btnNext.addEventListener('click', () => { synth.cancel(); clearAutoTimer(); playSlide(currentSlide + 1); });
+    btnRestart.addEventListener('click', () => { synth.cancel(); clearAutoTimer(); playSlide(0); });
+
+    btnTTS.addEventListener('click', () => {
+      narrationOn = !narrationOn;
+      btnTTS.textContent = `VOICE: ${narrationOn ? 'ON' : 'OFF'}`;
+      if (!narrationOn) synth.cancel();
+    });
+
+    btnAudio.addEventListener('click', () => {
+      ambientOn = !ambientOn;
+      btnAudio.textContent = `AUDIO: ${ambientOn ? 'ON' : 'OFF'}`;
+      if (ambientOn) startDrone();
+      else stopDrone();
+    });
+
+    btnPresenter.addEventListener('click', () => {
+      setPresenter(!presenterOn);
+    });
+
+    btnAuto.addEventListener('click', () => {
+      autoAdvanceOn = !autoAdvanceOn;
+      btnAuto.textContent = `AUTO: ${autoAdvanceOn ? 'ON' : 'OFF'}`;
+      clearAutoTimer();
+    });
+
+    // Keyboard
+    window.addEventListener('keydown', (e) => {
+      // Start screen
+      if (!overlay.classList.contains('hidden')) {
+        if (e.key === 'Enter') startExperience();
+        return;
+      }
+
+      const k = e.key;
+      if (k === 'ArrowRight') { synth.cancel(); clearAutoTimer(); playSlide(currentSlide + 1); }
+      if (k === 'ArrowLeft') { synth.cancel(); clearAutoTimer(); playSlide(currentSlide - 1); }
+      if (k.toLowerCase() === 'r') { synth.cancel(); clearAutoTimer(); playSlide(0); }
+      if (k.toLowerCase() === 'p') { setPresenter(!presenterOn); }
+      if (k.toLowerCase() === 'a') { autoAdvanceOn = !autoAdvanceOn; btnAuto.textContent = `AUTO: ${autoAdvanceOn ? 'ON' : 'OFF'}`; clearAutoTimer(); }
+      if (k === ' ') {
+        e.preventDefault();
+        if (synth.speaking) synth.cancel();
+      }
+    });
+
+    // Load voices
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = () => synth.getVoices();
+    }
+  </script>
+  <script src="js/live_journey.js"></script>
+</body>
+</html>

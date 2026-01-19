@@ -1,0 +1,10 @@
+{
+  "name": "gbfoods-nordics-holo-live",
+  "private": true,
+  "version": "1.0.0",
+  "description": "GBFoods Nordics — Path to 100 M€ (Holographic Strategy Journey) with live KPI HUD, avatar presenter, and Q&A chatbot.",
+  "scripts": {
+    "dev": "npx serve . -l 5173",
+    "lint": "echo \"No lint configured\""
+  }
+}
